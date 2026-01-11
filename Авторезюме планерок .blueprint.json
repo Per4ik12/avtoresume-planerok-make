@@ -1,0 +1,1032 @@
+{
+    "name": "Авторезюме планерок ",
+    "flow": [
+        {
+            "id": 1,
+            "module": "dropbox:watchFiles2",
+            "version": 5,
+            "parameters": {
+                "__IMTCONN__": 13280161,
+                "undefined": "list",
+                "recursive": true,
+                "limit": 5,
+                "path": "/Планерка"
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "Планерки (spkstrit@gmail.com)",
+                            "data": {
+                                "scoped": "true",
+                                "connection": "dropbox"
+                            }
+                        },
+                        "undefined": {
+                            "label": "Select from List"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:dropbox",
+                        "label": "Connection",
+                        "required": true
+                    },
+                    {
+                        "type": "select",
+                        "label": "Folder Search Method",
+                        "validate": {
+                            "enum": [
+                                "list",
+                                "keyword"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "recursive",
+                        "type": "boolean",
+                        "label": "Watch also subfolders",
+                        "required": true
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit",
+                        "required": true
+                    },
+                    {
+                        "name": "path",
+                        "type": "folder",
+                        "label": "Folder Path"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "dropbox:getFile",
+            "version": 5,
+            "parameters": {
+                "__IMTCONN__": 13280161
+            },
+            "filter": {
+                "name": "audio",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{1.name}}",
+                            "b": ".m4a",
+                            "o": "text:endwith"
+                        }
+                    ],
+                    [
+                        {
+                            "a": "{{1.name}}",
+                            "b": ".mp3",
+                            "o": "text:endwith"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "path": "{{1.path_lower}}",
+                "select": "map"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "select": {
+                            "label": "Map a file path"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "dropbox"
+                            },
+                            "label": "Планерки (spkstrit@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:dropbox",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "select",
+                        "type": "select",
+                        "label": "Way of selecting files",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "map",
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "type": "text",
+                        "label": "File Path",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "module": "http:MakeRequest",
+            "version": 4,
+            "parameters": {
+                "authenticationType": "noAuth",
+                "tlsType": "",
+                "proxyKeychain": ""
+            },
+            "mapper": {
+                "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+                "method": "post",
+                "headers": [
+                    {
+                        "name": "Authorization",
+                        "value": "Bearer "
+                    }
+                ],
+                "contentType": "multipart",
+                "parseResponse": true,
+                "stopOnHttpError": true,
+                "allowRedirects": true,
+                "shareCookies": false,
+                "requestCompressedContent": true,
+                "multipartBodyContent": [
+                    {
+                        "name": "file",
+                        "multipartFieldType": "file",
+                        "data": "{{3.data}}",
+                        "fileName": "audio.m4a"
+                    },
+                    {
+                        "name": "model",
+                        "multipartFieldType": "text",
+                        "value": "whisper-large-v3"
+                    },
+                    {
+                        "name": "language",
+                        "multipartFieldType": "text",
+                        "value": "ru"
+                    },
+                    {
+                        "name": "response_format",
+                        "multipartFieldType": "text",
+                        "value": "json"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "authenticationType": {
+                            "label": "No authenticationUse when no credentials are required for the request."
+                        },
+                        "tlsType": {
+                            "label": "Empty"
+                        },
+                        "proxyKeychain": {
+                            "label": "Choose a key"
+                        }
+                    },
+                    "expect": {
+                        "method": {
+                            "mode": "chose",
+                            "label": "POST"
+                        },
+                        "headers": {
+                            "mode": "chose",
+                            "items": [
+                                null
+                            ]
+                        },
+                        "queryParameters": {
+                            "mode": "chose"
+                        },
+                        "contentType": {
+                            "label": "multipart/form-data (supports file uploads)Enter files and form data as key-value pairs."
+                        },
+                        "parseResponse": {
+                            "mode": "chose"
+                        },
+                        "stopOnHttpError": {
+                            "mode": "chose"
+                        },
+                        "allowRedirects": {
+                            "mode": "chose"
+                        },
+                        "shareCookies": {
+                            "mode": "chose"
+                        },
+                        "requestCompressedContent": {
+                            "mode": "chose"
+                        },
+                        "multipartBodyContent": {
+                            "mode": "chose",
+                            "items": [
+                                {
+                                    "multipartFieldType": {
+                                        "mode": "chose",
+                                        "label": "File"
+                                    }
+                                },
+                                {
+                                    "multipartFieldType": {
+                                        "mode": "chose",
+                                        "label": "Text"
+                                    }
+                                },
+                                {
+                                    "multipartFieldType": {
+                                        "mode": "chose",
+                                        "label": "Text"
+                                    }
+                                },
+                                {
+                                    "multipartFieldType": {
+                                        "mode": "chose",
+                                        "label": "Text"
+                                    }
+                                }
+                            ]
+                        },
+                        "paginationType": {
+                            "label": "Empty"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "authenticationType",
+                        "type": "select",
+                        "label": "Authentication type",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "noAuth",
+                                "apiKey",
+                                "basicAuth",
+                                "oAuth"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tlsType",
+                        "type": "select",
+                        "label": "Transport layer security (TLS)",
+                        "validate": {
+                            "enum": [
+                                "mTls",
+                                "tls"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "proxyKeychain",
+                        "type": "keychain:proxy",
+                        "label": "Proxy"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "url",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "get",
+                                "head",
+                                "post",
+                                "put",
+                                "patch",
+                                "delete",
+                                "options"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "type": "array",
+                        "label": "Headers",
+                        "spec": {
+                            "name": "value",
+                            "label": "Header",
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "label": "Name",
+                                    "type": "text",
+                                    "required": true,
+                                    "validate": {
+                                        "pattern": "^[-!#$%&'*+.^_`|~0-9A-Za-z]+$"
+                                    }
+                                },
+                                {
+                                    "name": "value",
+                                    "label": "Value",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "queryParameters",
+                        "type": "array",
+                        "label": "Query parameters",
+                        "spec": {
+                            "name": "value",
+                            "label": "Parameter",
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "label": "Name",
+                                    "type": "text",
+                                    "required": true
+                                },
+                                {
+                                    "name": "value",
+                                    "label": "Value",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "contentType",
+                        "type": "select",
+                        "label": "Body content type",
+                        "validate": {
+                            "enum": [
+                                "json",
+                                "multipart",
+                                "urlEncoded",
+                                "custom"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "parseResponse",
+                        "type": "boolean",
+                        "label": "Parse response",
+                        "required": true
+                    },
+                    {
+                        "name": "stopOnHttpError",
+                        "type": "boolean",
+                        "label": "Return error if HTTP request fails",
+                        "required": true
+                    },
+                    {
+                        "name": "timeout",
+                        "type": "uinteger",
+                        "label": "Timeout",
+                        "validate": {
+                            "min": 1,
+                            "max": 300
+                        }
+                    },
+                    {
+                        "name": "allowRedirects",
+                        "type": "boolean",
+                        "label": "Allow redirects",
+                        "required": true
+                    },
+                    {
+                        "name": "shareCookies",
+                        "type": "boolean",
+                        "label": "Share cookies with other HTTP modules",
+                        "required": true
+                    },
+                    {
+                        "name": "requestCompressedContent",
+                        "type": "boolean",
+                        "label": "Request compressed content",
+                        "required": true
+                    },
+                    {
+                        "name": "multipartBodyContent",
+                        "type": "array",
+                        "label": "Body content",
+                        "spec": {
+                            "name": "value",
+                            "label": "Field",
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "label": "Name",
+                                    "type": "text",
+                                    "required": true
+                                },
+                                {
+                                    "name": "multipartFieldType",
+                                    "label": "Field type",
+                                    "type": "select",
+                                    "required": true,
+                                    "options": [
+                                        {
+                                            "value": "text",
+                                            "label": "Text",
+                                            "nested": [
+                                                {
+                                                    "name": "value",
+                                                    "label": "Value",
+                                                    "type": "text"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "value": "file",
+                                            "label": "File",
+                                            "nested": [
+                                                {
+                                                    "name": "data",
+                                                    "label": "Data",
+                                                    "type": "buffer",
+                                                    "semantic": "file:data"
+                                                },
+                                                {
+                                                    "name": "fileName",
+                                                    "label": "File name",
+                                                    "type": "filename",
+                                                    "semantic": "file:name"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "paginationType",
+                        "type": "select",
+                        "label": "Pagination type",
+                        "validate": {
+                            "enum": [
+                                "offsetBased",
+                                "pageBased",
+                                "urlBased",
+                                "tokenBased"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "data",
+                        "label": "Data",
+                        "type": "any"
+                    },
+                    {
+                        "name": "statusCode",
+                        "label": "Status Code",
+                        "type": "number"
+                    },
+                    {
+                        "name": "headers",
+                        "label": "Headers",
+                        "type": "collection",
+                        "spec": [
+                            {
+                                "name": "content-length",
+                                "label": "Content-Length",
+                                "type": "text"
+                            },
+                            {
+                                "name": "content-encoding",
+                                "label": "Content-Encoding",
+                                "type": "text"
+                            },
+                            {
+                                "name": "content-type",
+                                "label": "Content-Type",
+                                "type": "text"
+                            },
+                            {
+                                "name": "server",
+                                "label": "Server",
+                                "type": "text"
+                            },
+                            {
+                                "name": "cache-control",
+                                "label": "Cache-Control",
+                                "type": "text"
+                            },
+                            {
+                                "name": "set-cookie",
+                                "label": "Set-Cookie",
+                                "type": "array",
+                                "spec": {
+                                    "type": "text"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 5,
+            "module": "http:MakeRequest",
+            "version": 4,
+            "parameters": {
+                "tlsType": "",
+                "proxyKeychain": "",
+                "authenticationType": "noAuth"
+            },
+            "mapper": {
+                "url": "https://api.groq.com/openai/v1/chat/completions",
+                "method": "post",
+                "headers": [
+                    {
+                        "name": "Authorization",
+                        "value": "Bearer"
+                    },
+                    {
+                        "name": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "contentType": "json",
+                "inputMethod": "jsonString",
+                "shareCookies": false,
+                "parseResponse": true,
+                "allowRedirects": true,
+                "stopOnHttpError": true,
+                "jsonStringBodyContent": "{\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Ты - профессиональный бизнес-ассистент, специализирующийся на анализе деловых встреч и планерок.\n\nТвоя задача: создать чёткое, структурированное резюме планерки, которое можно использовать как рабочий документ.\n\nТРЕБОВАНИЯ К РЕЗЮМЕ:\n1. Конкретность - только факты, решения и действия\n2. Краткость - без воды и общих фраз\n3. Структурированность - чёткие разделы\n4. Actionable - понятно, кто, что и когда делает\n\nФОРМАТ РЕЗЮМЕ:\n\n## 📅 Информация о встрече\n- Дата: [извлеки из контекста или укажи \"не указана\"]\n- Участники: [перечисли имена, если упоминались]\n- Длительность: [если понятна из транскрипции]\n\n## 🎯 Цель встречи\n[Одним предложением - зачем собрались]\n\n## 💡 Ключевые обсуждённые темы\n[Пронумерованный список, максимум 5 пунктов]\n\n## ✅ Принятые решения\n[Каждое решение - отдельный пункт с контекстом]\nФормат: \"РЕШЕНО: [что решили] | Контекст: [почему]\"\n\n## 📋 Задачи и ответственные\n[Таблица или список]\n- **Задача**: [конкретная задача]\n  **Ответственный**: [кто]\n  **Срок**: [когда или \"не указан\"]\n\n## ⚠️ Проблемы и риски\n[Только если были упомянуты]\n- **Проблема**: [описание]\n  **Возможное влияние**: [краткая оценка]\n\n## 🔄 Следующие шаги\n[Конкретные действия до следующей встречи]\n\n## 📌 Важные заметки\n[Любая критичная информация, цифры, даты, договорённости]\n\n---\n\nВАЖНО:\n- Если информация не упоминалась - не придумывай, напиши \"не обсуждалось\"\n- Сохраняй упомянутые цифры, даты, суммы точно\n- Используй профессиональный деловой язык\n- Выделяй имена, сроки, суммы жирным шрифтом для быстрого сканирования\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{4.data.text}}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 2000\n}",
+                "requestCompressedContent": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "method": {
+                            "mode": "chose",
+                            "label": "POST"
+                        },
+                        "headers": {
+                            "mode": "chose",
+                            "items": [
+                                null,
+                                null
+                            ]
+                        },
+                        "contentType": {
+                            "label": "application/jsonEnter data in the JSON format, as a string or using a data structure."
+                        },
+                        "inputMethod": {
+                            "label": "JSON stringEnter the JSON body as a raw text string. If values contain JSON reserved characters, you must escape them manually."
+                        },
+                        "shareCookies": {
+                            "mode": "chose"
+                        },
+                        "parseResponse": {
+                            "mode": "chose"
+                        },
+                        "allowRedirects": {
+                            "mode": "chose"
+                        },
+                        "paginationType": {
+                            "label": "Empty"
+                        },
+                        "queryParameters": {
+                            "mode": "chose"
+                        },
+                        "stopOnHttpError": {
+                            "mode": "chose"
+                        },
+                        "requestCompressedContent": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "tlsType": {
+                            "label": "Empty"
+                        },
+                        "proxyKeychain": {
+                            "label": "Choose a key"
+                        },
+                        "authenticationType": {
+                            "label": "No authenticationUse when no credentials are required for the request."
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "authenticationType",
+                        "type": "select",
+                        "label": "Authentication type",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "noAuth",
+                                "apiKey",
+                                "basicAuth",
+                                "oAuth"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tlsType",
+                        "type": "select",
+                        "label": "Transport layer security (TLS)",
+                        "validate": {
+                            "enum": [
+                                "mTls",
+                                "tls"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "proxyKeychain",
+                        "type": "keychain:proxy",
+                        "label": "Proxy"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "url",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "get",
+                                "head",
+                                "post",
+                                "put",
+                                "patch",
+                                "delete",
+                                "options"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "type": "text",
+                                    "label": "Name",
+                                    "required": true,
+                                    "validate": {
+                                        "pattern": "^[-!#$%&'*+.^_`|~0-9A-Za-z]+$"
+                                    }
+                                },
+                                {
+                                    "name": "value",
+                                    "type": "text",
+                                    "label": "Value"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Header"
+                        },
+                        "type": "array",
+                        "label": "Headers"
+                    },
+                    {
+                        "name": "queryParameters",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "type": "text",
+                                    "label": "Name",
+                                    "required": true
+                                },
+                                {
+                                    "name": "value",
+                                    "type": "text",
+                                    "label": "Value"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Parameter"
+                        },
+                        "type": "array",
+                        "label": "Query parameters"
+                    },
+                    {
+                        "name": "contentType",
+                        "type": "select",
+                        "label": "Body content type",
+                        "validate": {
+                            "enum": [
+                                "json",
+                                "multipart",
+                                "urlEncoded",
+                                "custom"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "parseResponse",
+                        "type": "boolean",
+                        "label": "Parse response",
+                        "required": true
+                    },
+                    {
+                        "name": "stopOnHttpError",
+                        "type": "boolean",
+                        "label": "Return error if HTTP request fails",
+                        "required": true
+                    },
+                    {
+                        "name": "timeout",
+                        "type": "uinteger",
+                        "label": "Timeout",
+                        "validate": {
+                            "max": 300,
+                            "min": 1
+                        }
+                    },
+                    {
+                        "name": "allowRedirects",
+                        "type": "boolean",
+                        "label": "Allow redirects",
+                        "required": true
+                    },
+                    {
+                        "name": "shareCookies",
+                        "type": "boolean",
+                        "label": "Share cookies with other HTTP modules",
+                        "required": true
+                    },
+                    {
+                        "name": "requestCompressedContent",
+                        "type": "boolean",
+                        "label": "Request compressed content",
+                        "required": true
+                    },
+                    {
+                        "name": "inputMethod",
+                        "type": "select",
+                        "label": "Body input method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "dataStructure",
+                                "jsonString"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "jsonStringBodyContent",
+                        "type": "text",
+                        "label": "Body content",
+                        "required": true
+                    },
+                    {
+                        "name": "paginationType",
+                        "type": "select",
+                        "label": "Pagination type",
+                        "validate": {
+                            "enum": [
+                                "offsetBased",
+                                "pageBased",
+                                "urlBased",
+                                "tokenBased"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "data",
+                        "type": "any",
+                        "label": "Data"
+                    },
+                    {
+                        "name": "statusCode",
+                        "type": "number",
+                        "label": "Status Code"
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "content-length",
+                                "type": "text",
+                                "label": "Content-Length"
+                            },
+                            {
+                                "name": "content-encoding",
+                                "type": "text",
+                                "label": "Content-Encoding"
+                            },
+                            {
+                                "name": "content-type",
+                                "type": "text",
+                                "label": "Content-Type"
+                            },
+                            {
+                                "name": "server",
+                                "type": "text",
+                                "label": "Server"
+                            },
+                            {
+                                "name": "cache-control",
+                                "type": "text",
+                                "label": "Cache-Control"
+                            },
+                            {
+                                "name": "set-cookie",
+                                "spec": {
+                                    "type": "text"
+                                },
+                                "type": "array",
+                                "label": "Set-Cookie"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Headers"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "telegram:SendReplyMessage",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 13328140
+            },
+            "mapper": {
+                "chatId": "936971500",
+                "text": "🎙️ *Резюме планерки готово!* {{5.data.choices[].message.content}}",
+                "messageThreadId": "",
+                "parseMode": "Markdown",
+                "replyToMessageId": "",
+                "replyMarkupAssembleType": "reply_markup_enter",
+                "replyMarkup": ""
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "RezumatorMeets",
+                            "data": {
+                                "scoped": "true",
+                                "connection": "telegram"
+                            }
+                        }
+                    },
+                    "expect": {
+                        "parseMode": {
+                            "label": "Markdown"
+                        },
+                        "disableNotification": {
+                            "mode": "chose"
+                        },
+                        "replyMarkupAssembleType": {
+                            "label": "Enter the Reply Markup"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:telegram",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "chatId",
+                        "type": "text",
+                        "label": "Chat ID",
+                        "required": true
+                    },
+                    {
+                        "name": "text",
+                        "type": "text",
+                        "label": "Text",
+                        "required": true
+                    },
+                    {
+                        "name": "messageThreadId",
+                        "type": "number",
+                        "label": "Message Thread ID"
+                    },
+                    {
+                        "name": "parseMode",
+                        "type": "select",
+                        "label": "Parse Mode",
+                        "validate": {
+                            "enum": [
+                                "Markdown",
+                                "HTML"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "disableNotification",
+                        "type": "boolean",
+                        "label": "Disable Notifications"
+                    },
+                    {
+                        "name": "disableWebPagePreview",
+                        "type": "boolean",
+                        "label": "Disable Link Previews"
+                    },
+                    {
+                        "name": "replyToMessageId",
+                        "type": "number",
+                        "label": "Original Message ID"
+                    },
+                    {
+                        "name": "replyMarkupAssembleType",
+                        "type": "select",
+                        "label": "Enter/Assemble the Reply Markup Field",
+                        "validate": {
+                            "enum": [
+                                "reply_markup_enter",
+                                "reply_markup_assemble"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "replyMarkup",
+                        "type": "text",
+                        "label": "Reply Markup"
+                    }
+                ]
+            }
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu2.make.com",
+        "notes": []
+    }
+}
